@@ -3,8 +3,6 @@ src/template.txt
 
 src/main.rs
 
-!data/puzzles/*
-
 # dont want these files to show up in my editor
 data/examples/*
 data/inputs/.keep

@@ -1,8 +1,0 @@
-#!/bin/bash
-
-
-day=$(printf "%02d" $1)
-
-echo "glow data/puzzles/$day.md"
-
-glow data/puzzles/$day.md
