@@ -3,12 +3,13 @@ src/template.txt
 
 src/main.rs
 
-!data/inputs/*
 !data/puzzles/*
 
 # dont want these files to show up in my editor
+data/examples/*
 data/inputs/.keep
 data/puzzles/.keep
 LICENSE
 Cargo.lock
 Cargo.toml
+read
