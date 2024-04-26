@@ -14,14 +14,12 @@ impl Pair {
         Ok(Self(first, second))
     }
 
-    fn is_overlapping(&self, other: &Self) -> bool {
-        let p1 = other.0 >= self.0 && other.1 <= self.1;
-        let p2 = self.0 >= other.0 && self.1 <= other.1;
-
-        p1 || p2
+    const fn is_overlapping(&self, other: &Self) -> bool {
+        self.0 <= other.0 && self.1 >= other.1
+            || self.0 >= other.0 && self.1 <= other.1
     }
 
-    fn is_overlapping_at_all(&self, other: &Self) -> bool {
+    const fn is_overlapping_at_all(&self, other: &Self) -> bool {
         let range1 = self.0..self.1;
         let range2 = other.0..other.1;
 

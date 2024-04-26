@@ -1,6 +1,6 @@
 advent_of_code::solution!(3);
 
-fn to_num(c: char) -> Option<u32> {
+const fn to_num(c: char) -> Option<u32> {
     match c {
         'a'..='z' => Some(c as u32 - ('a' as u32) + 1),
         'A'..='Z' => Some(c as u32 - ('A' as u32) + 27),

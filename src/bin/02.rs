@@ -30,7 +30,7 @@ impl PartialOrd for Move {
 }
 
 impl Move {
-    fn from(a: char) -> Option<Self> {
+    const fn from(a: char) -> Option<Self> {
         match a {
             'A' | 'X' => Some(Move::Rock),
             'B' | 'Y' => Some(Move::Paper),
@@ -39,7 +39,7 @@ impl Move {
         }
     }
 
-    fn to_num(self) -> u32 {
+    const fn to_num(self) -> u32 {
         match self {
             Move::Rock => 1,
             Move::Paper => 2,
@@ -47,7 +47,7 @@ impl Move {
         }
     }
 
-    fn win(self) -> Self {
+    const fn win(self) -> Self {
         match self {
             Move::Rock => Move::Paper,
             Move::Paper => Move::Scissor,
@@ -55,7 +55,7 @@ impl Move {
         }
     }
 
-    fn lose(self) -> Self {
+    const fn lose(self) -> Self {
         match self {
             Move::Rock => Move::Scissor,
             Move::Paper => Move::Rock,
@@ -63,7 +63,7 @@ impl Move {
         }
     }
 
-    fn fight2(self, other: char) -> u32 {
+    const fn fight2(self, other: char) -> u32 {
         match other {
             // x is lose, y is draw, z is win
             'X' => self.lose().to_num(),
@@ -79,7 +79,7 @@ struct Round(Move, Move);
 
 // works only for 1 it will complicate things a lot if i introduce another enum to handle the part2 this way.
 impl Round {
-    fn new(x: (Move, Move)) -> Self {
+    const fn new(x: (Move, Move)) -> Self {
         Round(x.0, x.1)
     }
 
