@@ -12,6 +12,7 @@
   > Do it manually.
 
 1. No to loops. I find those hard to read.
+  > Except when the other choice is to use for_each, that is worse.
 
 1. Prefer Point-free calls where possible.
 
