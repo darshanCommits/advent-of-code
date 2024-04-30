@@ -1,56 +1,120 @@
 advent_of_code::solution!(5);
+
+use itertools::Itertools;
 use nom::{
+    branch::alt,
     bytes::complete::tag,
-    character::complete::{digit1, multispace0, space1},
-    combinator::{map_res, opt},
-    multi::many0,
-    sequence::{preceded, tuple},
+    character::complete::{self, alpha1, digit1, multispace0, space1},
+    combinator::{map, map_res, opt},
+    multi::separated_list1,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Instruction {
-    amount: u32,
-    from: u32,
-    to: u32,
+    amount: usize,
+    from: usize,
+    to: usize,
 }
 
 impl Instruction {
+    // only me @29-04-24 and god knows what this is
     fn parse(s: &str) -> IResult<&str, Self> {
         let (s, (_, amount, _, from, _, to, _)) = tuple((
             tag("move"),
             preceded(space1, map_res(digit1, str::parse)),
             preceded(space1, tag("from")),
-            preceded(space1, map_res(digit1, str::parse)),
+            preceded(space1, map_res(digit1, str::parse::<usize>)),
             preceded(space1, tag("to")),
-            preceded(space1, map_res(digit1, str::parse)),
+            preceded(space1, map_res(digit1, str::parse::<usize>)),
             opt(multispace0),
         ))(s)?;
 
-        Ok((s, Self { amount, from, to }))
+        Ok((
+            s,
+            Self {
+                amount,
+                from: from - 1,
+                to: to - 1,
+            },
+        ))
     }
 
-    fn parse_all(s: &str) -> IResult<&str, Vec<Self>> {
-        many0(Self::parse)(s)
+    fn parse_all(s: &str) -> Vec<Instruction> {
+        s.lines()
+            .map(Self::parse)
+            .filter_map(Result::ok)
+            .map(|x| x.1)
+            .collect()
     }
 }
 
-#[derive(Debug)]
-struct Crates;
+fn parse_line(s: &str) -> IResult<&str, Vec<&str>> {
+    let (s, c) = separated_list1(
+        // seperator of each crate
+        tag(" "),
+        alt((
+            // parses empty crate to empty string
+            map(tag("   "), |_| ""),
+            // parses crate to char(&str)
+            delimited(complete::char('['), alpha1, complete::char(']')),
+        )),
+    )(s)?;
 
-impl Crates {
-    fn parse() {}
-    fn parse_all() {}
-    fn shift() {}
+    Ok((s, c))
+}
+
+fn parse_crates(s: &str) -> Vec<Vec<&str>> {
+    let matrix: Vec<Vec<&str>> = s
+        .lines()
+        .map(parse_line)
+        .filter_map(Result::ok)
+        .map(|x| x.1)
+        .collect();
+
+    let max_len = matrix[0].len();
+
+    let transposed = (0..max_len)
+        .map(|i| {
+            matrix
+                .iter()
+                .map(|arr| arr[i])
+                .filter(|&x| !x.is_empty())
+                .rev()
+                .collect()
+        })
+        .collect();
+
+    transposed
 }
 
 pub fn part_one(input: &str) -> Option<String> {
-    let res = input.split_once("\n\n").unwrap().1;
+    let res = input.split_once("\n\n").unwrap();
 
-    dbg!(Instruction::parse_all(res));
+    let mut parsed_crates = parse_crates(res.0);
+    let parsed_inst = Instruction::parse_all(res.1);
 
-    // dbg!(parse_inst("move 1 from 8 to 4"));
-    None
+    // for loops are atleast better than for each loops.
+    for Instruction { amount, from, to } in parsed_inst {
+        let len = parsed_crates[from].len();
+
+        let drained = &parsed_crates[from]
+            .drain((len - amount)..)
+            .rev()
+            .collect::<Vec<_>>();
+
+        for x in drained {
+            parsed_crates[to].push(x);
+        }
+    }
+
+    let res = parsed_crates
+        .iter_mut()
+        .map(|x| x.pop().unwrap())
+        .join("");
+
+    Some(res)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
