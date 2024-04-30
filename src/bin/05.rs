@@ -50,7 +50,10 @@ impl Instruction {
     }
 }
 
-fn parse_line(s: &str) -> IResult<&str, Vec<&str>> {
+type Crate<'a> = Vec<&'a str>;
+type CrateList<'a> = Vec<Crate<'a>>;
+
+fn parse_line(s: &str) -> IResult<&str, Crate> {
     let (s, c) = separated_list1(
         // seperator of each crate
         tag(" "),
@@ -65,8 +68,8 @@ fn parse_line(s: &str) -> IResult<&str, Vec<&str>> {
     Ok((s, c))
 }
 
-fn parse_crates(s: &str) -> Vec<Vec<&str>> {
-    let matrix: Vec<Vec<&str>> = s
+fn parse_crates(s: &str) -> CrateList {
+    let matrix: CrateList = s
         .lines()
         .map(parse_line)
         .filter_map(Result::ok)
@@ -104,21 +107,44 @@ pub fn part_one(input: &str) -> Option<String> {
             .rev()
             .collect::<Vec<_>>();
 
-        for x in drained {
+        for &x in drained {
             parsed_crates[to].push(x);
         }
     }
 
     let res = parsed_crates
-        .iter_mut()
-        .map(|x| x.pop().unwrap())
+        .iter()
+        .map(|x| x.last().unwrap())
         .join("");
 
     Some(res)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+    let res = input.split_once("\n\n").unwrap();
+
+    let mut parsed_crates = parse_crates(res.0);
+    let parsed_inst = Instruction::parse_all(res.1);
+
+    // for loops are atleast better than for each loops.
+    for Instruction { amount, from, to } in parsed_inst {
+        let len = parsed_crates[from].len();
+
+        let drained = &parsed_crates[from]
+            .drain((len - amount)..)
+            .collect::<Vec<_>>();
+
+        for &x in drained {
+            parsed_crates[to].push(x);
+        }
+    }
+
+    let res = parsed_crates
+        .iter()
+        .map(|x| x.last().unwrap())
+        .join("");
+
+    Some(res)
 }
 
 #[cfg(test)]
@@ -134,10 +160,9 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "reason"]
     fn test_part_two() {
         let result =
             part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some("mcd".to_uppercase()));
     }
 }
